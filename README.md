@@ -1,6 +1,6 @@
 # Gatling-Kafka
 
-An unofficial [Gatling](http://gatling.io/) 2.1 stress test plugin
+Fork an unofficial [Gatling](http://gatling.io/) 2.1 stress test plugin
 for [Apache Kafka](http://kafka.apache.org/) 0.8 protocol.
 
 This plugin supports the Kafka producer API only
@@ -60,17 +60,10 @@ to the jar file, you also need to copy kafka-clients library to `lib` directory:
 
 ###  Creating a simulation file
 
-    $ cd /path/to/gatling-charts-highcharts-bundle-2.1.*
-    $ vi user-files/simulations/KafkaSimulation.scala
-
 You can find sample simulation files in the [test directory](src/test/scala/com/github/mnogu/gatling/kafka/test).
 Among these files, [BasicSimulation.scala](src/test/scala/com/github/mnogu/gatling/kafka/test/BasicSimulation.scala) would be a good start point.
 Make sure that you replace `BasicSimulation` with `KafkaSimulation` in `BasicSimulation.scala`
 if your simulation filename is `KafkaSimulation.scala`.
-
-Note that gatling-kafka 0.1.x isn't compatible with 0.0.x.
-See the [README.md in the 0.0.6 release](https://github.com/mnogu/gatling-kafka/blob/0.0.6/README.md)
-if you are using 0.0.x.
 
 ### Running a stress test
 

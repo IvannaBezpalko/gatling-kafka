@@ -1,36 +1,24 @@
 package com.github.mnogu.gatling.kafka.action
 
-import akka.actor.ActorRef
-
-import com.github.mnogu.gatling.kafka.config.KafkaProtocol
+import com.github.mnogu.gatling.kafka.Predef._
 import com.github.mnogu.gatling.kafka.request.builder.KafkaAttributes
-import io.gatling.core.action.{Failable, Interruptable}
-import io.gatling.core.result.message.{KO, OK}
-import io.gatling.core.result.writer.DataWriterClient
+import io.gatling.commons.stats.{KO, OK}
+import io.gatling.commons.util.ClockSingleton.nowMillis
+import io.gatling.commons.validation.Validation
+import io.gatling.core.action.{Action, ChainableAction}
 import io.gatling.core.session._
-import io.gatling.core.util.TimeHelper.nowMillis
-import io.gatling.core.validation.Validation
+import io.gatling.core.stats.StatsEngine
+import io.gatling.core.stats.message.ResponseTimings
 import org.apache.kafka.clients.producer._
-
-object KafkaRequestAction extends DataWriterClient {
-  def reportUnbuildableRequest(
-      requestName: String,
-      session: Session,
-      errorMessage: String): Unit = {
-    val now = nowMillis
-    writeRequestData(
-      session, requestName, now, now, now, now, KO, Some(errorMessage))
-  }
-}
 
 class KafkaRequestAction[K,V](
   val producer: KafkaProducer[K,V],
   val kafkaAttributes: KafkaAttributes[K,V],
-  val kafkaProtocol: KafkaProtocol,
-  val next: ActorRef)
-  extends Interruptable with Failable with DataWriterClient {
+  val next: Action,
+  val statsEngine: StatsEngine)
+  extends ChainableAction {
 
-  def executeOrFail(session: Session): Validation[Unit] = {
+  override def execute(session: Session): Unit = {
     kafkaAttributes.requestName(session).flatMap { resolvedRequestName =>
       val payload = kafkaAttributes.payload
 
@@ -52,8 +40,8 @@ class KafkaRequestAction[K,V](
       }
       
       outcome.onFailure(
-        errorMessage => KafkaRequestAction.reportUnbuildableRequest(
-          resolvedRequestName, session, errorMessage))
+        errorMessage => statsEngine.reportUnbuildableRequest(
+          session, resolvedRequestName, errorMessage))
       outcome
     }
   }
@@ -66,8 +54,8 @@ class KafkaRequestAction[K,V](
 
     payload(session).map { resolvedPayload =>
       val record = key match {
-        case Some(k) => new ProducerRecord[K,V](kafkaProtocol.topic, k, resolvedPayload)
-        case None => new ProducerRecord[K,V](kafkaProtocol.topic, resolvedPayload)
+        case Some(k) => new ProducerRecord[K,V](kafka.topic, k, resolvedPayload)
+        case None => new ProducerRecord[K,V](kafka.topic, resolvedPayload)
       }
 
       val requestStartDate = nowMillis
@@ -80,15 +68,14 @@ class KafkaRequestAction[K,V](
           val responseEndDate = nowMillis
 
           // log the outcome
-          writeRequestData(
+          statsEngine.logResponse(
             session,
             requestName,
-            requestStartDate,
-            requestEndDate,
-            responseStartDate,
-            responseEndDate,
+            ResponseTimings(requestStartDate, responseEndDate),
             if (e == null) OK else KO,
-            if (e == null) None else Some(e.getMessage))
+            if (e == null) None else Some(e.getMessage),
+            None
+          )
         }
       })
 
@@ -97,8 +84,7 @@ class KafkaRequestAction[K,V](
     }
   }
 
-  override def postStop(): Unit = {
-    super.postStop()
-    producer.close()
+  override def name: String = {
+    getClass.getName
   }
 }

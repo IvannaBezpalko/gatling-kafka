@@ -15,7 +15,7 @@ class BasicSimulation extends Simulation {
       Map(
         ProducerConfig.ACKS_CONFIG -> "1",
         // list of Kafka broker hostname and port pairs
-        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> "localhost:9092",
+        ProducerConfig.BOOTSTRAP_SERVERS_CONFIG -> "http://be-app-dev.youa.vn.ua:8080",
 
         // in most cases, StringSerializer or ByteArraySerializer
         ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG ->

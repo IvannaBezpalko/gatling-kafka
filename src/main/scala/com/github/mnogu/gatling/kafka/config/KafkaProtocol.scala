@@ -1,6 +1,6 @@
 package com.github.mnogu.gatling.kafka.config
 
-import io.gatling.core.config.Protocol
+import io.gatling.core.protocol.Protocol
 
 object KafkaProtocol {
   val DefaultKafkaProtocol = new KafkaProtocol(

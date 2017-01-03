@@ -7,5 +7,5 @@ import io.gatling.core.session.Expression
 object Predef {
   def kafka = KafkaProtocol.DefaultKafkaProtocol
 
-  def kafka(requestName: Expression[String]) = new KafkaRequestBuilder(requestName)
+  def kafka(requestName: Expression[String]) = KafkaRequestBuilder(requestName)
 }

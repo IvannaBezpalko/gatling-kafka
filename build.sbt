@@ -7,10 +7,10 @@ version := "0.1.1-SNAPSHOT"
 scalaVersion := "2.11.5"
 
 libraryDependencies ++= Seq(
-  "io.gatling" % "gatling-core" % "2.1.7" % "provided",
+  "io.gatling" % "gatling-core" % "2.2.3" % "provided",
   // Gatling 2.1.3 depends on Scala 2.11
   // and Apache Kafka 0.8.1.1 doesn't support Scala 2.11
-  ("org.apache.kafka" % "kafka-clients" % "0.8.2.0")
+  ("org.apache.kafka" % "kafka-clients" % "0.10.0.1")
     // Gatling contains slf4j-api
     .exclude("org.slf4j", "slf4j-api")
 )
